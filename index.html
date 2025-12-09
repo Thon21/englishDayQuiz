@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Day Challenge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --simpson-yellow: #FFD90F;
+            --marge-blue: #1ca1f2;
+            --marge-blue-dark: #0b86d1;
+            --text-dark: #333;
+            --correct-green: #4CAF50;
+            --wrong-red: #FF5252;
+            --bg-offwhite: #f0f4f8;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--simpson-yellow);
+            /* Simple background pattern */
+            background-image: radial-gradient(#fff200 15%, transparent 16%), radial-gradient(#fff200 15%, transparent 16%);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-dark);
+        }
+
+        .container {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            padding: 40px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 4px solid #fff;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background-color: #eee;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--marge-blue);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        h1 {
+            font-family: 'Fredoka', sans-serif;
+            color: var(--marge-blue);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        /* Video Styling */
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            margin-bottom: 2rem;
+            background: #000;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Buttons */
+        .btn {
+            background-color: var(--marge-blue);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-family: 'Fredoka', sans-serif;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 6px 0 var(--marge-blue-dark);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 9px 0 var(--marge-blue-dark);
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 var(--marge-blue-dark);
+        }
+
+        /* Options Grid */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .option-btn {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            color: var(--text-dark);
+            padding: 18px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .option-btn:hover {
+            background-color: #e3f2fd;
+            border-color: var(--marge-blue);
+            transform: translateX(5px);
+        }
+
+        /* Feedback States */
+        .option-btn.correct {
+            background-color: var(--correct-green);
+            color: white;
+            border-color: var(--correct-green);
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong-red);
+            color: white;
+            border-color: var(--wrong-red);
+            opacity: 0.8;
+        }
+
+        .feedback-area {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.5rem;
+            margin: 20px 0;
+            min-height: 2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .score-display {
+            font-size: 4rem;
+            font-family: 'Fredoka', sans-serif;
+            color: var(--marge-blue);
+            margin: 10px 0;
+        }
+
+        .question-counter {
+            background: #ffeeba;
+            color: #856404;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                padding: 20px;
+            }
+            h1 { font-size: 1.8rem; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <div id="start-screen" class="screen active">
+            <h1>English Day Challenge</h1>
+            <p style="font-size: 4rem; margin: 10px;">🍩</p>
+            <p>Watch the clips from <em>The Simpsons</em> and guess the correct idiom or phrase!</p>
+            <p><strong>15 Questions • Click to Play Video</strong></p>
+            <button class="btn" onclick="startQuiz()">Start Quiz</button>
+        </div>
+
+        <div id="quiz-screen" class="screen">
+            <div class="question-counter">Question <span id="current-q-num">1</span> / 15</div>
+            
+            <h2 id="question-text" style="margin-top: 0;">Question text...</h2>
+
+            <div class="video-wrapper">
+                <iframe id="youtube-player" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            
+            <div id="options-container" class="options-grid">
+                </div>
+
+            <div id="feedback" class="feedback-area"></div>
+
+            <button id="next-btn" class="btn" style="display: none;" onclick="nextQuestion()">Next Question ➜</button>
+        </div>
+
+        <div id="result-screen" class="screen">
+            <h1>Quiz Completed!</h1>
+            <p>Your English skills are...</p>
+            <div class="score-display">
+                <span id="final-score">0</span> / 15
+            </div>
+            <p id="final-message" style="font-weight: bold; font-size: 1.3rem;"></p>
+            <br>
+            <button class="btn" onclick="location.reload()">Play Again ↺</button>
+        </div>
+    </div>
+
+    <script>
+        // --- VIDEO ID EXTRACTION HELPER ---
+        // This function extracts the 11-character video ID from various YouTube URL formats (watch, embed, youtu.be)
+        function extractVideoId(url) {
+            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|\/(?:v|e|embed)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const match = url.match(regex);
+            return (match && match[1]) ? match[1] : null;
+        }
+
+        // --- DATA CONFIGURATION ---
+        const quizData = [
+            {
+                id: 1,
+                videoId: extractVideoId("https://youtu.be/Ebwdat4AKXg?si=HBfR7Ps1xScilYT1"),
+                question: "Ralph uses the incorrect word. Which of these is the correct form of \"unpassable\"?",
+                options: [
+                    { text: "A. Untrue", correct: false },
+                    { text: "B. Ridiculous", correct: false },
+                    { text: "C. Impossible", correct: true }
+                ]
+            },
+            {
+                id: 2,
+                videoId: extractVideoId("https://youtu.be/ET_MvauBeXI?si=0eGPrk0BIFF3ycxl"),
+                question: "Which of these expressions fits best? \"Young lady, this may be the high point of Bart’s life. __________\"",
+                options: [
+                    { text: "A. Let him down", correct: false },
+                    { text: "B. Cut him off", correct: false },
+                    { text: "C. Cut him some slack", correct: true }
+                ]
+            },
+            {
+                id: 3,
+                videoId: extractVideoId("https://youtu.be/VhAK4pljLIU?si=Gyaq88PpxoGv4ibw"),
+                question: "Which word fits best? \"Grandpa I think you were ___________.\"",
+                options: [
+                    { text: "A. Scared", correct: false },
+                    { text: "B. Scammed", correct: true },
+                    { text: "C. Smart", correct: false }
+                ]
+            },
+            {
+                id: 4,
+                videoId: extractVideoId("https://youtu.be/Jn8F16aP780?si=bkY6qU0OtAfrAwg"),
+                question: "What a lucky little boy to get a trip ___________ the park with his grandpa.",
+                options: [
+                    { text: "A. to", correct: true },
+                    { text: "B. in", correct: false },
+                    { text: "C. at", correct: false }
+                ]
+            },
+            {
+                id: 5,
+                videoId: extractVideoId("https://youtu.be/VCWpjsBznfg?si=Q8pRG_rVLUtw4mlp"),
+                question: "Should we slice them diagonally or just ___________ the crust?",
+                options: [
+                    { text: "A. Cut down", correct: true },
+                    { text: "B. Cut on", correct: false },
+                    { text: "C. Cut off", correct: false }
+                ]
+            },
+            {
+                id: 6,
+                // Note: This link is the same video ID as Q5: VCWpjsBznfg
+                videoId: extractVideoId("https://youtu.be/VCWpjsBznfg?si=1Ocb-09wpINHePM6"),
+                question: "But they're____________. Even the humble ____________has a place...",
+                options: [
+                    { text: "A. Slay", correct: false },
+                    { text: "B. Awesome", correct: false },
+                    { text: "C. Noob", correct: true }
+                ]
+            },
+            {
+                id: 7,
+                videoId: extractVideoId("https://youtu.be/CiDb9BYFMCg?si=6fuOzpmO_Hs8o7tG"),
+                question: "They _______ everywhere. People! It's a___________",
+                options: [
+                    { text: "A. Spilled milk / Grave yard", correct: false },
+                    { text: "B. Cut corners / Death trap", correct: true },
+                    { text: "C. Let the cat out the bag / Sad day", correct: false }
+                ]
+            },
+            {
+                id: 8,
+                videoId: extractVideoId("https://youtu.be/QoiOD0IQJFQ?si=k09NU_t36VzgvaIh"),
+                question: "Trust me, nothing I've done today___________ fun.",
+                options: [
+                    { text: "A. Had been", correct: false },
+                    { text: "B. Has been", correct: true },
+                    { text: "C. Have been", correct: false }
+                ]
+            },
+            {
+                id: 9,
+                videoId: extractVideoId("https://youtu.be/rxuV8q42k1s?si=dwLcI5MiaPsuuJdW"),
+                question: "You___________, Bart.",
+                options: [
+                    { text: "A. Give in", correct: false },
+                    { text: "B. Let go", correct: false },
+                    { text: "C. Take over", correct: true }
+                ]
+            },
+            {
+                id: 10,
+                videoId: extractVideoId("https://youtu.be/jZEDzaEsBNo?si=NxxIVEKM0q4KyLGM"),
+                question: "Dude, don't ___________ in the workplace. We are already___________ with Mr. Friedman.",
+                options: [
+                    { text: "A. Let it out / glass half empty", correct: false },
+                    { text: "B. Lose it / on thin ice", correct: true },
+                    { text: "C. Give up / head over heels", correct: false }
+                ]
+            },
+            {
+                id: 11,
+                videoId: extractVideoId("https://youtu.be/ZZfk8yi005g?si=U3SmqG4klE_24XrY"),
+                question: "If I___________ approach you for a kiss, would you construe that as harassment or give your willing ___________?",
+                options: [
+                    { text: "A. Was / control", correct: false },
+                    { text: "B. Were to / consent", correct: true },
+                    { text: "C. Had to / anger", correct: false }
+                ]
+            },
+            {
+                id: 12,
+                videoId: extractVideoId("https://youtu.be/FwojXkslqvM?si=MN0JmfzlYmQ8bXJD"),
+                question: "Guess the expression based on the clip.",
+                options: [
+                    { text: "A. Kill two birds with one stone", correct: true },
+                    { text: "B. Get the kettle boiling", correct: false },
+                    { text: "C. Make you save for a rainy day", correct: false }
+                ]
+            },
+            {
+                id: 13,
+                videoId: extractVideoId("https://youtu.be/-tP-N_hn0oI?si=nYKisdz-ak1jxSjw"),
+                question: "___________ I to understand you're purposely, ___________ education to these children?",
+                options: [
+                    { text: "A. If / giving", correct: false },
+                    { text: "B. Am / denying", correct: true },
+                    { text: "C. Were / supplying", correct: false }
+                ]
+            },
+            {
+                id: 14,
+                videoId: extractVideoId("https://youtu.be/oGFkieeq4Qs?si=b36--F1-8GP5hqF3"),
+                question: "Me? ___________. My gooney brother's always going to libraries. I usually ___________ in front.",
+                options: [
+                    { text: "A. Unlikely / hang out", correct: true },
+                    { text: "B. Likely / throw down", correct: false },
+                    { text: "C. Inlikely / play", correct: false }
+                ]
+            },
+            {
+                id: 15,
+                videoId: extractVideoId("https://youtu.be/S_ouCK8kK5w?si=fjRCwVC5zcwo39a5"),
+                question: "Nothing can___________ today.",
+                options: [
+                    { text: "A. Be the elephant in the room", correct: false },
+                    { text: "B. Hunt me down", correct: false },
+                    { text: "C. Rain on my parade", correct: true }
+                ]
+            }
+        ];
+
+        // --- APP STATE ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let isAnswered = false;
+
+        // --- DOM ELEMENTS ---
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const youtubePlayer = document.getElementById('youtube-player');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackEl = document.getElementById('feedback');
+        const nextBtn = document.getElementById('next-btn');
+        const currentQNum = document.getElementById('current-q-num');
+        const finalScoreEl = document.getElementById('final-score');
+        const finalMessageEl = document.getElementById('final-message');
+        const progressBar = document.getElementById('progress-bar');
+
+        // --- FUNCTIONS ---
+
+        function startQuiz() {
+            startScreen.classList.remove('active');
+            quizScreen.classList.add('active');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isAnswered = false;
+            const currentData = quizData[currentQuestionIndex];
+            
+            // Update UI
+            currentQNum.textContent = currentQuestionIndex + 1;
+            questionText.textContent = currentData.question;
+            feedbackEl.textContent = "";
+            nextBtn.style.display = "none";
+            
+            // Update Progress Bar
+            const progressPercent = ((currentQuestionIndex) / quizData.length) * 100;
+            progressBar.style.width = progressPercent + "%";
+
+            // Update Video: Using the extracted ID with no autoplay for maximum compatibility.
+            // User must click the play button.
+            youtubePlayer.src = `https://www.youtube.com/embed/${currentData.videoId}?rel=0&modestbranding=1`;
+            
+            // Setup Options
+            optionsContainer.innerHTML = "";
+            currentData.options.forEach((opt, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'option-btn';
+                btn.textContent = opt.text;
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, selectedBtn) {
+            if (isAnswered) return; // Prevent multiple clicks
+            isAnswered = true;
+
+            const currentData = quizData[currentQuestionIndex];
+            const isCorrect = currentData.options[selectedIndex].correct;
+            const allBtns = optionsContainer.children;
+
+            // No need to reload the video source here, as we rely on the user to pause.
+
+            if (isCorrect) {
+                score++;
+                selectedBtn.classList.add('correct');
+                feedbackEl.innerHTML = "Correct! <span style='font-size:2rem;'>🎉</span>";
+                feedbackEl.style.color = "var(--correct-green)";
+            } else {
+                selectedBtn.classList.add('wrong');
+                feedbackEl.innerHTML = "Oops! <span style='font-size:2rem;'>😅</span>";
+                feedbackEl.style.color = "var(--wrong-red)";
+                
+                // Highlight the correct answer automatically
+                for (let i = 0; i < allBtns.length; i++) {
+                    if (currentData.options[i].correct) {
+                        allBtns[i].classList.add('correct');
+                    }
+                }
+            }
+
+            nextBtn.style.display = "inline-block";
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+            
+            // Fill 100% progress
+            progressBar.style.width = "100%";
+            
+            finalScoreEl.textContent = score;
+
+            if (score === 15) {
+                finalMessageEl.textContent = "Excellent! You are a true Simpsons Expert! 🍩🏆";
+            } else if (score >= 10) {
+                finalMessageEl.textContent = "Great job! You really know your English idioms.";
+            } else {
+                finalMessageEl.textContent = "Good effort! Keep watching and learning!";
+            }
+        }
+    </script>
+</body>
+</html>
